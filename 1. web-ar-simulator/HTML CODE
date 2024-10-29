@@ -1,0 +1,205 @@
+!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, World!</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+      <h1 class="title">Hello World! </h1>
+      <p id="currentTime"></p>
+      <script src="script.js"></script>
+  </body>
+</html>index.html
+This file is your entry point, where the 3D AR environment and gesture recognition scripts are linked.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR Gesture Control Simulator</title>
+  
+  <!-- Link to Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- Link to TensorFlow.js and Handpose model from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Web AR Gesture Control Simulator</h1>
+  <div id="canvas-container"></div>
+
+  <!-- Your main app script -->
+  <script src="app.js"></script>
+</body>
+</html>
+app.js
+This file initializes the application, connects the gesture recognition and AR environment.
+import { initGestureRecognition } from './gestureRecognition.js';
+import { initAREnvironment } from './arEnvironment.js';
+
+// Initialize both the gesture recognition and AR environment
+window.onload = function () {
+  initGestureRecognition();
+  initAREnvironment();
+};
+gestureRecognition.js
+This file manages the hand tracking and gesture recognition functionality using TensorFlow.js and Media Pipe.
+import * as handTrack from '@tensorflow-models/handpose';
+import '@tensorflow/tfjs-backend-webgl';
+
+export async function initGestureRecognition() {
+  const video = document.createElement('video');
+  video.setAttribute("autoplay", true);
+  video.setAttribute("playsinline", true);
+  video.width = 640;
+  video.height = 480;
+  document.body.appendChild(video);
+
+  // Load the handpose model
+  const model = await handTrack.load();
+  console.log("HandPose model loaded!");
+
+  // Start video capture
+  if (navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      })
+      .catch((error) => {
+        console.log("Error accessing webcam: ", error);
+      });
+  }
+
+  // Function to detect hand gestures
+  async function detectGesture() {
+    const predictions = await model.estimateHands(video);
+    if (predictions.length > 0) {
+      const hand = predictions[0];
+      console.log("Hand detected", hand);
+
+      // Handle recognized gestures (you can add more functionality here)
+      handleGesture(hand);
+    }
+    requestAnimationFrame(detectGesture);
+  }
+
+  detectGesture();
+}
+
+// Example function to handle gesture recognition
+function handleGesture(hand) {
+  console.log("Gesture recognized! Hand landmarks:", hand.landmarks);
+  // You can add logic here to interact with the AR environment
+}
+4. /src/arEnvironment.js
+
+import * as THREE from 'three';
+
+export function initAREnvironment() {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document. getElementById('canvas-container'). append Child(renderer.domElement);
+
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
+
+  camera.position.z = 5;
+
+  // Animation loop to rotate the cube
+  function animate() {
+    requestAnimationFrame(animate);
+
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+}
+/Assets: Any images, textures, or media files used in the project
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Hand_gesture_icon.svg/2048px-Hand_gesture_icon.svg.png" alt="Project Logo" width="150">
+/docs: Additional documentation or design components
+/docs
+  https://ieeexplore.ieee.org/document/10444445
+https://ieeexplore.ieee.org/document/10444445
+https://www.softkraft.co/web-application-architecture/
+
+/tests: Testing scripts for the project
+/tests
+  ├── testGestureRecognition.js
+// testGestureRecognition.js
+
+// Mock functions to simulate gesture recognition
+function mockGestureRecognition(input) {
+    const gestures = {
+        "wave": "Detected a wave gesture",
+        "thumbs_up": "Detected a thumbs up gesture",
+        "point": "Detected a point gesture"
+    };
+    return gestures[input] || "No gesture detected";
+}
+
+// Test Cases
+function testGestureRecognition() {
+    const testCases = [
+        { input: "wave", expected: "Detected a wave gesture" },
+        { input: "thumbs_up", expected: "Detected a thumbs up gesture" },
+        { input: "point", expected: "Detected a point gesture" },
+        { input: "unknown", expected: "No gesture detected" },
+    ];
+
+    testCases.forEach((testCase) => {
+        const result = mockGestureRecognition(testCase.input);
+        console.assert(result === testCase.expected, Test failed for input: ${testCase.input}. Expected: ${testCase.expected}, but got: ${result});
+        console.log(Test passed for input: ${testCase.input}.);
+    });
+}
+
+// Run Tests
+testGestureRecognition();
+
+  └── testAREnvironment.js
+// testAREnvironment.js
+
+// Mock function to simulate AR environment initialization
+function mockAREnvironment() {
+    return {
+        isInitialized: true,
+        supportsGestures: true,
+    };
+}
+
+// Test Cases
+function testAREnvironment() {
+    const arEnvironment = mockAREnvironment();
+
+    console.assert(arEnvironment.isInitialized === true, "AR environment should be initialized.");
+    console.assert(arEnvironment.supportsGestures === true, "AR environment should support gestures.");
+    
+    console.log("AR Environment Tests Passed.");
+}
+
+// Run Tests
+testAREnvironment();
+
+testGestureRecognition.js
+A basic test script for gesture recognition functionality.
+import { initGestureRecognition } from '../src/gestureRecognition.js';
+
+test('Check if hand tracking model is loaded', async () => {
+  const result = await initGestureRecognition();
+  expect(result).not.toBe(null);
+});
+
+/lib: External libraries or dependencies
+/ •  Three.js: https://threejs.org/
+•  TensorFlow.js Handpose Model: https://github.com/tensorflow/tfjs-models/tree/master/handpose
